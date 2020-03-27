@@ -2,6 +2,7 @@ package main
 
 import (
 	"os"
+	"os/exec"
 	"os/signal"
 	"syscall"
 
@@ -28,6 +29,10 @@ func main() {
 
 	taskCh.Listen(consts.TopicTask, &taskListener{statusCh: statusCh})
 	remoteTaskCh.Listen(consts.TopicRemoteTask, &remoteTaskListener{statusCh: statusCh})
+
+	if out, err:=exec.Command("docker", "version").CombinedOutput(); err != nil {
+		logrus.Fatalf("fail to connect docker: %v, %s", err, out)
+	}
 
 	logrus.Info("Started")
 
