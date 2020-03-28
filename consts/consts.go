@@ -1,5 +1,9 @@
 package consts
 
+const (
+	Version = "0.1.0"
+)
+
 // channel topic
 const (
 	TopicTask       = "vcode-judge-task"
