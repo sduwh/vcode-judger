@@ -1,6 +1,6 @@
-package main
+package models
 
-type MessageTask struct {
+type JudgeTask struct {
 	ID          string `json:"id"`
 	CaseID      string `json:"case_id"`
 	TimeLimit   uint64 `json:"time_limit"`
@@ -9,7 +9,7 @@ type MessageTask struct {
 	Code        string `json:"code"`
 }
 
-type MessageRemoteTask struct {
+type RemoteJudgeTask struct {
 	ID         string `json:"id"`
 	ProviderOJ string `json:"provider_oj"`
 	ProviderID string `json:"provider_id"`
@@ -17,7 +17,11 @@ type MessageRemoteTask struct {
 	Code       string `json:"code"`
 }
 
-type MessageStatus struct {
-	TaskID string `json:"task_id"`
-	Status string `json:"status"`
+type JudgeStatus struct {
+	TaskID       string `json:"task_id"`
+	SubmitID     string `json:"submit_id"`
+	Status       string `json:"status"`
+	TimeUsed     int64  `json:"time_used"`
+	MemoryUsed   int64  `json:"time_used"`
+	CompileError string `json:"compile_error"`
 }
