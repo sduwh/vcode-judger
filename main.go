@@ -2,9 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"flag"
+	"github.com/sduwh/vcode-judger/config"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 
 	"github.com/sduwh/vcode-judger/channel"
 	"github.com/sduwh/vcode-judger/consts"
@@ -16,6 +19,18 @@ import (
 const RedisAddr = "127.0.0.1:6379"
 
 func main() {
+	// set time location
+	loc, _ := time.LoadLocation("Asia/Chongqing")
+
+	// config init
+	configName := flag.String("configName", "config", "config file's name.")
+	configPath := flag.String("configPath", "./config", "config file's path.")
+	config.ConfInit(configName, configPath)
+	// log init
+	config.LogInit()
+	logrus.Printf("时区: %s\n", loc)
+
+	// main flow
 	remoteTaskChannel, err := channel.NewRedisChannel(RedisAddr)
 	if err != nil {
 		logrus.WithError(err).Fatal("Create remote task channel")

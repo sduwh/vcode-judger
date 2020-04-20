@@ -17,12 +17,16 @@ require (
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/gorilla/mux v1.7.4 // indirect
 	github.com/gotestyourself/gotestyourself v1.4.0 // indirect
+	github.com/lestrrat-go/file-rotatelogs v2.3.0+incompatible
+	github.com/lestrrat-go/strftime v1.0.1 // indirect
 	github.com/morikuni/aec v1.0.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0-rc1 // indirect
 	github.com/opencontainers/image-spec v1.0.1 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
+	github.com/rifflock/lfshook v0.0.0-20180920164130-b9218ef580f5
 	github.com/sirupsen/logrus v1.5.0
-	github.com/stretchr/testify v1.2.2
+	github.com/spf13/viper v1.6.3
+	github.com/stretchr/testify v1.3.0
 	github.com/urfave/cli/v2 v2.2.0
 	golang.org/x/exp v0.0.0-20190121172915-509febef88a4
 	golang.org/x/time v0.0.0-20191024005414-555d28b269f0 // indirect
