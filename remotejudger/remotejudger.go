@@ -33,7 +33,7 @@ type RemoteJudgeProvider interface {
 
 	Submit(task *models.RemoteJudgeTask) (string, error)
 
-	Status(submitID string) (*models.JudgeStatus, error)
+	Status(task *models.RemoteJudgeTask, submitID string) (*models.JudgeStatus, error)
 }
 
 func NewRemoteJudger() (RemoteJudger, error) {
@@ -81,7 +81,7 @@ func (r *remoteJudger) Judge(task *models.RemoteJudgeTask, listener RemoteJudgeL
 	}
 
 	for {
-		status, err := provider.Status(submitID)
+		status, err := provider.Status(task, submitID)
 		if err != nil {
 			listener.OnError(err)
 			return

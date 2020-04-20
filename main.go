@@ -26,11 +26,17 @@ func main() {
 		logrus.WithError(err).Fatal("Create status channel channel")
 	}
 
-	taskListener, err := newRemoteTaskListener(newRemoteJudgeListener(statusChannel))
+	judger, err := remotejudger.NewRemoteJudger()
 	if err != nil {
-		logrus.WithError(err).Fatal("Create remote task listener")
+		logrus.WithError(err).Fatal("Create remote judger")
 	}
-	remoteTaskChannel.Listen(consts.TopicRemoteTask, taskListener)
+
+	remoteTaskChannel.Listen(consts.TopicRemoteTask, &RemoteTaskListener{
+		judger: judger,
+		listener: &RemoteJudgeListener{
+			statusChannel: statusChannel,
+		},
+	})
 
 	logrus.Info("Started")
 	sigCh := make(chan os.Signal, 1)
@@ -39,23 +45,12 @@ func main() {
 	logrus.Info("Stopped")
 }
 
-type remoteTaskListener struct {
+type RemoteTaskListener struct {
 	judger   remotejudger.RemoteJudger
 	listener remotejudger.RemoteJudgeListener
 }
 
-func newRemoteTaskListener(listener remotejudger.RemoteJudgeListener) (*remoteTaskListener, error) {
-	judger, err := remotejudger.NewRemoteJudger()
-	if err != nil {
-		return nil, err
-	}
-	return &remoteTaskListener{
-		judger:   judger,
-		listener: listener,
-	}, nil
-}
-
-func (l *remoteTaskListener) OnNext(message []byte) {
+func (l *RemoteTaskListener) OnNext(message []byte) {
 	task := &models.RemoteJudgeTask{}
 	if err := json.Unmarshal(message, task); err != nil {
 		logrus.WithError(err).Error("Unmarshal json")
@@ -72,23 +67,19 @@ func (l *remoteTaskListener) OnNext(message []byte) {
 	l.judger.Judge(task, l.listener)
 }
 
-func (l *remoteTaskListener) OnError(err error) {
+func (l *RemoteTaskListener) OnError(err error) {
 	logrus.WithError(err).Error("Consume failed")
 }
 
-func (l *remoteTaskListener) OnComplete() {
+func (l *RemoteTaskListener) OnComplete() {
 	logrus.Info("Consume done")
 }
 
-type remoteJudgeListener struct {
+type RemoteJudgeListener struct {
 	statusChannel channel.Channel
 }
 
-func newRemoteJudgeListener(statusChannel channel.Channel) *remoteJudgeListener {
-	return &remoteJudgeListener{statusChannel: statusChannel}
-}
-
-func (l *remoteJudgeListener) OnStatus(status *models.JudgeStatus) {
+func (l *RemoteJudgeListener) OnStatus(status *models.JudgeStatus) {
 	message, err := json.Marshal(status)
 	if err != nil {
 		logrus.WithError(err).Error("Marshal json")
@@ -100,10 +91,10 @@ func (l *remoteJudgeListener) OnStatus(status *models.JudgeStatus) {
 	}
 }
 
-func (l *remoteJudgeListener) OnError(err error) {
+func (l *RemoteJudgeListener) OnError(err error) {
 	logrus.WithError(err).Error("Judge failed")
 }
 
-func (l *remoteJudgeListener) OnComplete() {
+func (l *RemoteJudgeListener) OnComplete() {
 	logrus.Info("Judge done")
 }

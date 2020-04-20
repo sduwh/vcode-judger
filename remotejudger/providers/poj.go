@@ -86,6 +86,10 @@ func (p *ProviderPOJ) Login() error {
 }
 
 func (p *ProviderPOJ) HasLogin() (bool, error) {
+	if p.currentAccount == nil {
+		return false, nil
+	}
+
 	resp, err := p.client.Get("http://poj.org/")
 	if err != nil {
 		return false, err
@@ -111,15 +115,17 @@ func (p *ProviderPOJ) HasLogin() (bool, error) {
 }
 
 func (p *ProviderPOJ) Submit(task *models.RemoteJudgeTask) (string, error) {
+	id := task.ProviderID
+	code := task.Code
 	language, ok := p.languages[task.Language]
 	if !ok {
 		return "", ErrLanguageNotSupported
 	}
 
 	resp, err := p.client.PostForm("http://poj.org/submit", url.Values{
-		"problem_id": []string{task.ProviderID},
+		"problem_id": []string{id},
 		"language":   []string{language},
-		"source":     []string{task.Code},
+		"source":     []string{code},
 		"submit":     []string{"Submit"},
 		"encoded":    []string{"1"},
 	})
@@ -153,7 +159,7 @@ func (p *ProviderPOJ) Submit(task *models.RemoteJudgeTask) (string, error) {
 	return submitID, nil
 }
 
-func (p *ProviderPOJ) Status(submitID string) (*models.JudgeStatus, error) {
+func (p *ProviderPOJ) Status(task *models.RemoteJudgeTask, submitID string) (*models.JudgeStatus, error) {
 	resp, err := p.client.Get("http://poj.org/status?user_id=" + p.currentAccount.username)
 	if err != nil {
 		return nil, err
@@ -180,6 +186,7 @@ func (p *ProviderPOJ) Status(submitID string) (*models.JudgeStatus, error) {
 		memoryUsed := remoteStatus.Next()
 		timeUsed := memoryUsed.Next()
 		status := &models.JudgeStatus{
+			TaskID:   task.ID,
 			SubmitID: submitID,
 			Status:   strings.TrimSpace(remoteStatus.Text()),
 		}
