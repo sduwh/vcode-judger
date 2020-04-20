@@ -10,18 +10,19 @@ type JudgeTask struct {
 }
 
 type RemoteJudgeTask struct {
-	ID         string `json:"id"`
-	ProviderOJ string `json:"provider_oj"`
-	ProviderID string `json:"provider_id"`
+	ID         string `json:"submit_id"`
+	ProviderOJ string `json:"origin"`
+	ProviderID string `json:"key"`
 	Language   string `json:"language"`
 	Code       string `json:"code"`
 }
 
+// TODO 检查判题结果的数据格式
 type JudgeStatus struct {
-	TaskID       string `json:"task_id"`
-	SubmitID     string `json:"submit_id"`
+	TaskID       string `json:"task_id"`   //vcode's submit
+	SubmitID     string `json:"submit_id"` // origin oj's submit
 	Status       string `json:"status"`
 	TimeUsed     int64  `json:"time_used"`
-	MemoryUsed   int64  `json:"time_used"`
+	MemoryUsed   int64  `json:"memory_used"`
 	CompileError string `json:"compile_error"`
 }

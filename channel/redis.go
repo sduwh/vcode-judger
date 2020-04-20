@@ -9,7 +9,7 @@ import (
 
 type RedisChannel struct {
 	client *redis.Client
-	stop   int32
+	stop   int32 // 0 => still running; 1 => Disconnect the redis
 }
 
 func NewRedisChannel(addr string) (Channel, error) {
@@ -33,6 +33,7 @@ func (c *RedisChannel) Take(topic string, timeout time.Duration) ([]byte, error)
 
 func (c *RedisChannel) Listen(topic string, listener Listener) {
 	go func() {
+		// 0 => still running
 		for atomic.LoadInt32(&c.stop) == 0 {
 			v, err := c.Take(topic, 0)
 			if err != nil {

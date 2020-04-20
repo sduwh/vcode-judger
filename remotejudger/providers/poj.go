@@ -1,6 +1,7 @@
 package providers
 
 import (
+	"encoding/base64"
 	"fmt"
 	"net/http"
 	"net/http/cookiejar"
@@ -116,8 +117,7 @@ func (p *ProviderPOJ) HasLogin() (bool, error) {
 
 func (p *ProviderPOJ) Submit(task *models.RemoteJudgeTask) (string, error) {
 	id := task.ProviderID
-	code := task.Code
-	language, ok := p.languages[task.Language]
+	language, ok := p.languages[strings.ToUpper(task.Language)]
 	if !ok {
 		return "", ErrLanguageNotSupported
 	}
@@ -125,7 +125,7 @@ func (p *ProviderPOJ) Submit(task *models.RemoteJudgeTask) (string, error) {
 	resp, err := p.client.PostForm("http://poj.org/submit", url.Values{
 		"problem_id": []string{id},
 		"language":   []string{language},
-		"source":     []string{code},
+		"source":     []string{base64.StdEncoding.EncodeToString([]byte(task.Code))},
 		"submit":     []string{"Submit"},
 		"encoded":    []string{"1"},
 	})
@@ -140,6 +140,7 @@ func (p *ProviderPOJ) Submit(task *models.RemoteJudgeTask) (string, error) {
 	}
 	defer resp.Body.Close()
 
+	// Parsing HTML page
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return "", err
@@ -219,5 +220,6 @@ func (p *ProviderPOJ) fetchCompileError(submitID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return doc.Find("pre").Find("font").Text(), nil
+	compileError := []byte(doc.Find("pre").Find("font").Text())
+	return base64.StdEncoding.EncodeToString(compileError), nil
 }

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"flag"
 	"github.com/sduwh/vcode-judger/config"
@@ -19,6 +20,7 @@ import (
 const RedisAddr = "127.0.0.1:6379"
 
 func main() {
+	// TODO 调整JUDGE注册，统一判题结果返回状态码
 	// set time location
 	loc, _ := time.LoadLocation("Asia/Chongqing")
 
@@ -31,21 +33,22 @@ func main() {
 	logrus.Printf("时区: %s\n", loc)
 
 	// main flow
+	// remote task queue
 	remoteTaskChannel, err := channel.NewRedisChannel(RedisAddr)
 	if err != nil {
 		logrus.WithError(err).Fatal("Create remote task channel")
 	}
-
+	// task result queue
 	statusChannel, err := channel.NewRedisChannel(RedisAddr)
 	if err != nil {
 		logrus.WithError(err).Fatal("Create status channel channel")
 	}
-
+	// new judger
 	judger, err := remotejudger.NewRemoteJudger()
 	if err != nil {
 		logrus.WithError(err).Fatal("Create remote judger")
 	}
-
+	// start listen task queue and judge task
 	remoteTaskChannel.Listen(consts.TopicRemoteTask, &RemoteTaskListener{
 		judger: judger,
 		listener: &RemoteJudgeListener{
@@ -53,6 +56,7 @@ func main() {
 		},
 	})
 
+	// exit the program
 	logrus.Info("Started")
 	sigCh := make(chan os.Signal, 1)
 	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
@@ -67,18 +71,24 @@ type RemoteTaskListener struct {
 
 func (l *RemoteTaskListener) OnNext(message []byte) {
 	task := &models.RemoteJudgeTask{}
+	// create new task by message
 	if err := json.Unmarshal(message, task); err != nil {
 		logrus.WithError(err).Error("Unmarshal json")
 		return
 	}
-
+	decodeBytes, err := base64.StdEncoding.DecodeString(task.Code)
+	if err != nil {
+		logrus.WithError(err).Errorf("base64 decode fail")
+	}
+	task.Code = string(decodeBytes)
+	logrus.Debugf("getTask:%+v", task)
 	logrus.WithFields(logrus.Fields{
 		"ID":         task.ID,
 		"ProviderOJ": task.ProviderOJ,
 		"ProviderID": task.ProviderID,
 		"Language":   task.Language,
 	}).Info("New remote task")
-
+	// start judge task
 	l.judger.Judge(task, l.listener)
 }
 

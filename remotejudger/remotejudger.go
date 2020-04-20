@@ -55,6 +55,7 @@ type remoteJudger struct {
 func (r *remoteJudger) Judge(task *models.RemoteJudgeTask, listener RemoteJudgeListener) {
 	defer listener.OnComplete()
 
+	// get origin oj
 	provider, ok := r.providers[task.ProviderOJ]
 	if !ok {
 		listener.OnError(ErrOJNotSupported)
@@ -73,7 +74,7 @@ func (r *remoteJudger) Judge(task *models.RemoteJudgeTask, listener RemoteJudgeL
 			return
 		}
 	}
-
+	// submit the problem
 	submitID, err := provider.Submit(task)
 	if err != nil {
 		listener.OnError(err)

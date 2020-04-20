@@ -24,7 +24,7 @@ const (
 // Languages
 const (
 	LanguageC    = "C"
-	LanguageCPP  = "CPP"
+	LanguageCPP  = "C++"
 	LanguageJava = "JAVA"
 )
 
