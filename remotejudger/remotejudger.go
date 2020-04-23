@@ -27,24 +27,45 @@ type RemoteJudgeListener interface {
 	OnComplete(judgeTaskId string)
 }
 
+/*
+	远程判题服务接口
+*/
 type RemoteJudgeProvider interface {
+	/*
+		登陆
+	*/
 	Login() error
 
+	/*
+		检查是否登陆
+	*/
 	HasLogin() (bool, error)
 
+	/*
+		提交代码并返回目标网站的submitID
+	*/
 	Submit(task *models.RemoteJudgeTask) (string, error)
 
+	/*
+		更具submitID去检查判题结果
+	*/
 	Status(task *models.RemoteJudgeTask, submitID string) (*models.JudgeStatus, error)
+	/*
+		获取compile error详细错误
+	*/
+	FetchCompileError(submitID string) (string, error)
 }
 
 func NewRemoteJudger() (RemoteJudger, error) {
 	poj, err := providers.NewProviderPOJ()
+	hdu, err := providers.NewProviderHDU()
 	if err != nil {
 		return nil, err
 	}
 	return &remoteJudger{
 		providers: map[string]RemoteJudgeProvider{
 			consts.RemotePOJ: poj,
+			consts.RemoteHDU: hdu,
 		},
 	}, nil
 }

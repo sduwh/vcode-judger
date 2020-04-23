@@ -42,14 +42,14 @@ func main() {
 	if err != nil {
 		logrus.WithError(err).Fatal("Create status channel channel")
 	}
-	// new judger
-	judger, err := remotejudger.NewRemoteJudger()
+	// new remoteJudger
+	remoteJudger, err := remotejudger.NewRemoteJudger()
 	if err != nil {
-		logrus.WithError(err).Fatal("Create remote judger")
+		logrus.WithError(err).Fatal("Create remote remoteJudger")
 	}
 	// start listen task queue and judge task
 	remoteTaskChannel.Listen(consts.TopicRemoteTask, &RemoteTaskListener{
-		judger: judger,
+		judger: remoteJudger,
 		listener: &RemoteJudgeListener{
 			statusChannel: statusChannel,
 		},

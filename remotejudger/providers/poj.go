@@ -196,12 +196,11 @@ func (p *ProviderPOJ) Status(task *models.RemoteJudgeTask, submitID string) (*mo
 			return nil, ErrStatusNotFound
 		}
 		if status.Status == "Compile Error" {
-			status.CompileError, err = p.fetchCompileError(submitID)
+			status.CompileError, err = p.FetchCompileError(submitID)
 			if err != nil {
 				logrus.WithError(err).Error("Fetch compile error")
 			}
 		}
-		// TODO 统一时间内存单位
 		_, _ = fmt.Sscanf(memoryUsed.Text(), "%dK", &status.MemoryUsed)
 		_, _ = fmt.Sscanf(timeUsed.Text(), "%dMS", &status.TimeUsed)
 		return status, nil
@@ -210,7 +209,7 @@ func (p *ProviderPOJ) Status(task *models.RemoteJudgeTask, submitID string) (*mo
 	return nil, ErrSubmissionNotFound
 }
 
-func (p *ProviderPOJ) fetchCompileError(submitID string) (string, error) {
+func (p *ProviderPOJ) FetchCompileError(submitID string) (string, error) {
 	resp, err := p.client.Get("http://poj.org/showcompileinfo?solution_id=" + submitID)
 	if err != nil {
 		return "", err
