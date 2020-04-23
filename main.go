@@ -20,7 +20,6 @@ import (
 const RedisAddr = "127.0.0.1:6379"
 
 func main() {
-	// TODO 调整JUDGE注册，统一判题结果返回状态码
 	// set time location
 	loc, _ := time.LoadLocation("Asia/Chongqing")
 
@@ -105,6 +104,7 @@ type RemoteJudgeListener struct {
 }
 
 func (l *RemoteJudgeListener) OnStatus(status *models.JudgeStatus) {
+
 	message, err := json.Marshal(status)
 	if err != nil {
 		logrus.WithError(err).Error("Marshal json")
@@ -120,6 +120,6 @@ func (l *RemoteJudgeListener) OnError(err error) {
 	logrus.WithError(err).Error("Judge failed")
 }
 
-func (l *RemoteJudgeListener) OnComplete() {
-	logrus.Info("Judge done")
+func (l *RemoteJudgeListener) OnComplete(judgeTaskId string) {
+	logrus.Infof("Task: %+vJudge done", judgeTaskId)
 }

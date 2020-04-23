@@ -157,6 +157,7 @@ func (p *ProviderPOJ) Submit(task *models.RemoteJudgeTask) (string, error) {
 	if submitID == "" {
 		return "", ErrSubmissionNotFound
 	}
+	logrus.Debugf("submitId: %v", submitID)
 	return submitID, nil
 }
 
@@ -200,7 +201,7 @@ func (p *ProviderPOJ) Status(task *models.RemoteJudgeTask, submitID string) (*mo
 				logrus.WithError(err).Error("Fetch compile error")
 			}
 		}
-
+		// TODO 统一时间内存单位
 		_, _ = fmt.Sscanf(memoryUsed.Text(), "%dK", &status.MemoryUsed)
 		_, _ = fmt.Sscanf(timeUsed.Text(), "%dMS", &status.TimeUsed)
 		return status, nil

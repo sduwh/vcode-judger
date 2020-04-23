@@ -17,7 +17,6 @@ type RemoteJudgeTask struct {
 	Code       string `json:"code"`
 }
 
-// TODO 检查判题结果的数据格式
 type JudgeStatus struct {
 	TaskID       string `json:"task_id"`   //vcode's submit
 	SubmitID     string `json:"submit_id"` // origin oj's submit

@@ -21,9 +21,8 @@ const (
 
 const containedStartMessage = "golang-gvisor-process-started\n"
 
-
 var (
-	container  = flag.String("untrusted-container", "gcr.io/golang-org/playground-sandbox-gvisor:latest", "container image name that hosts the untrusted binary under gvisor")
+	container = flag.String("untrusted-container", "gcr.io/golang-org/playground-sandbox-gvisor:latest", "container image name that hosts the untrusted binary under gvisor")
 )
 var (
 	readyContainer chan *Container

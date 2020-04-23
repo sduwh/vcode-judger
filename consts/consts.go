@@ -39,4 +39,5 @@ const (
 	StatusRuntimeError        = "Runtime Error"
 	StatusOutputLimitExceeded = "Output Limit Exceeded"
 	StatusCompileError        = "Compile Error"
+	StatusUnknownError        = "UnKnown Error"
 )

@@ -8,6 +8,7 @@ import (
 	"github.com/sduwh/vcode-judger/consts"
 	"github.com/sduwh/vcode-judger/models"
 	"github.com/sduwh/vcode-judger/remotejudger/providers"
+	"github.com/sduwh/vcode-judger/util"
 )
 
 var (
@@ -23,7 +24,7 @@ type RemoteJudgeListener interface {
 
 	OnError(err error)
 
-	OnComplete()
+	OnComplete(judgeTaskId string)
 }
 
 type RemoteJudgeProvider interface {
@@ -53,8 +54,7 @@ type remoteJudger struct {
 }
 
 func (r *remoteJudger) Judge(task *models.RemoteJudgeTask, listener RemoteJudgeListener) {
-	defer listener.OnComplete()
-
+	defer listener.OnComplete(task.ID)
 	// get origin oj
 	provider, ok := r.providers[task.ProviderOJ]
 	if !ok {
@@ -87,6 +87,9 @@ func (r *remoteJudger) Judge(task *models.RemoteJudgeTask, listener RemoteJudgeL
 			listener.OnError(err)
 			return
 		}
+		// Modify results
+		status.Status = util.JudgeStatusMapper(status.Status)
+		// send the result to queue
 		listener.OnStatus(status)
 
 		if strings.Contains(status.Status, "ing") {
