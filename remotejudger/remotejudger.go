@@ -2,6 +2,7 @@ package remotejudger
 
 import (
 	"errors"
+	"github.com/sirupsen/logrus"
 	"strings"
 	"time"
 
@@ -109,6 +110,7 @@ func (r *remoteJudger) Judge(task *models.RemoteJudgeTask, listener RemoteJudgeL
 			return
 		}
 		// Modify results
+		logrus.Debugf("[judge]status: %+v", status)
 		status.Status = util.JudgeStatusMapper(status.Status)
 		// send the result to queue
 		listener.OnStatus(status)

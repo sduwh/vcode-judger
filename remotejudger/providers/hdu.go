@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/http/cookiejar"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -30,6 +31,9 @@ func NewProviderHDU() (*ProviderHDU, error) {
 	}
 	return &ProviderHDU{
 		client: &http.Client{
+			CheckRedirect: func(req *http.Request, via []*http.Request) error {
+				return http.ErrUseLastResponse
+			},
 			Transport: &http.Transport{
 				MaxIdleConns:        500,
 				MaxIdleConnsPerHost: 100,
@@ -63,26 +67,36 @@ func (h *ProviderHDU) Login() error {
 		return err
 	}
 	loginRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	loginRequest.Header.Set("Host", "acm.hdu.edu.cn")
 	loginRequest.Header.Set("Referer", "http://acm.hdu.edu.cn/")
-	loginRequest.Header.Set("Origin", "http://acm.hdu.edu.cn")
 
 	resp, err := h.client.Do(loginRequest)
 	if err != nil {
+		if !strings.Contains(err.Error(), "302 response") {
+			return err
+		}
+	}
+	if err == nil {
+		defer resp.Body.Close()
+	}
+
+	checkResp, err := h.client.Get("http://acm.hdu.edu.cn/")
+	if err != nil {
 		return err
 	}
-	defer resp.Body.Close()
-	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	defer checkResp.Body.Close()
+
+	doc, err := goquery.NewDocumentFromReader(checkResp.Body)
 	if err != nil {
 		return nil
 	}
-	text := doc.Find("table").First().
-		Find("tr").First().Next().
-		Find("table").First().
-		Find("tr").First().Next().
-		Find("td").Last().
-		Find("a").First().Text()
-	logrus.Debugf("login: username %+v", text)
+	text := strings.TrimSpace(
+		doc.Find("table").First().
+			Find("tr").First().Next().
+			Find("table").First().
+			Find("tr").First().Next().
+			Find("td").Last().
+			Find("a").First().Text())
+	logrus.Debugf("[login] username: %+v target username: %+v", text, h.currentAccount.username)
 	if text != h.currentAccount.username {
 		return ErrLoginFailed
 	}
@@ -105,13 +119,14 @@ func (h *ProviderHDU) HasLogin() (bool, error) {
 		return false, err
 	}
 
-	text := doc.Find("table").First().
-		Find("tr").First().Next().
-		Find("table").First().
-		Find("tr").First().Next().
-		Find("td").Last().
-		Find("a").First().Text()
-	logrus.Debugf("check login: username %+v", text)
+	text := strings.TrimSpace(
+		doc.Find("table").First().
+			Find("tr").First().Next().
+			Find("table").First().
+			Find("tr").First().Next().
+			Find("td").Last().
+			Find("a").First().Text())
+	logrus.Debugf("[check login] username: %+v, target username: %+v", text, h.currentAccount.username)
 	return text == h.currentAccount.username, nil
 }
 
@@ -132,11 +147,15 @@ func (h *ProviderHDU) Submit(task *models.RemoteJudgeTask) (string, error) {
 		return "", err
 	}
 	defer resp.Body.Close()
-
+	// 查询时语言数值向大偏移一位
+	searchLanguageInt, _ := strconv.Atoi(language)
+	searchLanguage := strconv.Itoa(searchLanguageInt + 1)
+	statusUrl := fmt.Sprintf("http://acm.hdu.edu.cn/status.php?first=&pid=&user=%s&lang=%s&status=0",
+		h.currentAccount.username,
+		searchLanguage)
 	resp, err = h.client.Get(
-		fmt.Sprintf("http://acm.hdu.edu.cn/status.php?first=&pid=&user=%s&lang=%s&status=0",
-			h.currentAccount.username,
-			task.Language))
+		statusUrl)
+	logrus.Debugf("[submit status url] %s", statusUrl)
 	if err != nil {
 		return "", err
 	}
@@ -148,8 +167,10 @@ func (h *ProviderHDU) Submit(task *models.RemoteJudgeTask) (string, error) {
 	}
 
 	submitID := doc.Find("table").First().
+		Find("tr").First().Next().Next().Next().
+		Find("td").First().
 		Find("table").First().
-		Find("tr").First().Next().
+		Find("tr").First().Next().Next().
 		Find("td").First().Text()
 	if submitID == "" {
 		return "", ErrSubmissionNotFound
@@ -172,8 +193,9 @@ func (h *ProviderHDU) Status(task *models.RemoteJudgeTask, submitID string) (*mo
 	}
 
 	curRow := doc.Find("table").First().
+		Find("tr").First().Next().Next().Next().
 		Find("table").First().
-		Find("tr").First().Next()
+		Find("tr").First().Next().Next()
 	for {
 		curSubmitID := curRow.Find("td").First()
 		if curSubmitID.Text() == "" {
@@ -203,8 +225,10 @@ func (h *ProviderHDU) Status(task *models.RemoteJudgeTask, submitID string) (*mo
 		}
 		_, _ = fmt.Sscanf(timeUsed.Text(), "%dMS", &status.TimeUsed)
 		_, _ = fmt.Sscanf(memoryUsed.Text(), "%dB", &status.TimeUsed)
+		logrus.Debugf("status: %+v", status)
+		return status, nil
 	}
-	return nil, nil
+	return nil, ErrSubmissionNotFound
 }
 
 func (h *ProviderHDU) FetchCompileError(submitID string) (string, error) {
