@@ -3,10 +3,6 @@ package providers
 import (
 	"encoding/base64"
 	"fmt"
-	"github.com/PuerkitoBio/goquery"
-	"github.com/sduwh/vcode-judger/consts"
-	"github.com/sduwh/vcode-judger/models"
-	"github.com/sirupsen/logrus"
 	"math/rand"
 	"net/http"
 	"net/http/cookiejar"
@@ -14,6 +10,11 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/PuerkitoBio/goquery"
+	"github.com/sduwh/vcode-judger/consts"
+	"github.com/sduwh/vcode-judger/models"
+	"github.com/sirupsen/logrus"
 )
 
 type ProviderHDU struct {
@@ -31,9 +32,6 @@ func NewProviderHDU() (*ProviderHDU, error) {
 	}
 	return &ProviderHDU{
 		client: &http.Client{
-			CheckRedirect: func(req *http.Request, via []*http.Request) error {
-				return http.ErrUseLastResponse
-			},
 			Transport: &http.Transport{
 				MaxIdleConns:        500,
 				MaxIdleConnsPerHost: 100,
@@ -55,39 +53,27 @@ func NewProviderHDU() (*ProviderHDU, error) {
 
 func (h *ProviderHDU) Login() error {
 	h.currentAccount = h.accounts[rand.Intn(len(h.accounts))]
-	data := url.Values{
+
+	_, err := h.client.PostForm("http://acm.hdu.edu.cn/userloginex.php?action=login", url.Values{
 		"username": []string{h.currentAccount.username},
 		"userpass": []string{h.currentAccount.password},
 		"login":    []string{"Sign In"},
-	}
-	loginRequest, err := http.NewRequest("POST",
-		"http://acm.hdu.edu.cn/userloginex.php?action=login",
-		strings.NewReader(data.Encode()))
+	})
 	if err != nil {
-		return err
-	}
-	loginRequest.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	loginRequest.Header.Set("Referer", "http://acm.hdu.edu.cn/")
-
-	resp, err := h.client.Do(loginRequest)
-	if err != nil {
-		if !strings.Contains(err.Error(), "302 response") {
+		if !strings.Contains(err.Error(), "response missing Location header") {
 			return err
 		}
 	}
-	if err == nil {
-		defer resp.Body.Close()
-	}
 
-	checkResp, err := h.client.Get("http://acm.hdu.edu.cn/")
+	resp, err := h.client.Get("http://acm.hdu.edu.cn/")
 	if err != nil {
 		return err
 	}
-	defer checkResp.Body.Close()
+	defer resp.Body.Close()
 
-	doc, err := goquery.NewDocumentFromReader(checkResp.Body)
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
-		return nil
+		return err
 	}
 	text := strings.TrimSpace(
 		doc.Find("table").First().
