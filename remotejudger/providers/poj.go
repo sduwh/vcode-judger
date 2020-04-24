@@ -134,7 +134,8 @@ func (p *ProviderPOJ) Submit(task *models.RemoteJudgeTask) (string, error) {
 	}
 	defer resp.Body.Close()
 
-	resp, err = p.client.Get("http://poj.org/status?user_id=" + p.currentAccount.username)
+	resp, err = p.client.Get(fmt.Sprintf("http://poj.org/status?problem_id=%s&user_id=%s&result=&language=%s",
+		id, p.currentAccount.username, language))
 	if err != nil {
 		return "", err
 	}
