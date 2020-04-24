@@ -8,7 +8,7 @@ import (
 )
 
 func TestProviderHDU_Login(t *testing.T) {
-	p, err := NewProviderPOJ()
+	p, err := NewProviderHDU()
 	assert.NoError(t, err)
 
 	err = p.Login()
