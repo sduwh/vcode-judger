@@ -1,7 +1,6 @@
 package providers
 
 import (
-	"encoding/base64"
 	"fmt"
 	"math/rand"
 	"net/http"
@@ -228,6 +227,5 @@ func (h *ProviderHDU) FetchCompileError(submitID string) (string, error) {
 	if err != nil {
 		return "", nil
 	}
-	compileError := []byte(doc.Find("pre").Text())
-	return base64.StdEncoding.EncodeToString(compileError), nil
+	return doc.Find("pre").Text(), nil
 }

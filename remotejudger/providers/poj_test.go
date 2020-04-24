@@ -1,7 +1,6 @@
 package providers
 
 import (
-	"encoding/base64"
 	"testing"
 
 	"github.com/sduwh/vcode-judger/consts"
@@ -44,12 +43,10 @@ func TestProviderPOJ_Submit(t *testing.T) {
 		ID:         "a",
 		ProviderID: "1000",
 		Language:   consts.LanguageC,
-		Code: base64.StdEncoding.EncodeToString([]byte(`
-			// Code here
+		Code: `// Code here
 			int main() {
 				return 0;
-			}
-		`)),
+			}`,
 	}
 
 	id, err := p.Submit(task)

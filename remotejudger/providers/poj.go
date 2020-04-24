@@ -41,8 +41,8 @@ func NewProviderPOJ() (*ProviderPOJ, error) {
 			Timeout: 10 * time.Second,
 		},
 		languages: map[string]string{
-			consts.LanguageC:    "1",
-			consts.LanguageCPP:  "0",
+			consts.LanguageC:    "5",
+			consts.LanguageCPP:  "4",
 			consts.LanguageJava: "2",
 		},
 		accounts: []*account{
@@ -220,6 +220,5 @@ func (p *ProviderPOJ) FetchCompileError(submitID string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	compileError := []byte(doc.Find("pre").Find("font").Text())
-	return base64.StdEncoding.EncodeToString(compileError), nil
+	return doc.Find("pre").Find("font").Text(), nil
 }

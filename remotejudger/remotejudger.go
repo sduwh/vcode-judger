@@ -51,10 +51,6 @@ type RemoteJudgeProvider interface {
 		更具submitID去检查判题结果
 	*/
 	Status(task *models.RemoteJudgeTask, submitID string) (*models.JudgeStatus, error)
-	/*
-		获取compile error详细错误
-	*/
-	FetchCompileError(submitID string) (string, error)
 }
 
 func NewRemoteJudger() (RemoteJudger, error) {
@@ -72,8 +68,8 @@ func NewRemoteJudger() (RemoteJudger, error) {
 	}
 	return &remoteJudger{
 		providers: map[string]RemoteJudgeProvider{
-			consts.RemotePOJ: poj,
-			consts.RemoteHDU: hdu,
+			consts.RemotePOJ:  poj,
+			consts.RemoteHDU:  hdu,
 			consts.RemoteSDUT: sdut,
 		},
 	}, nil

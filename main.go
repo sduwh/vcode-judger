@@ -104,6 +104,9 @@ type RemoteJudgeListener struct {
 }
 
 func (l *RemoteJudgeListener) OnStatus(status *models.JudgeStatus) {
+	if status.CompileError != "" {
+		status.CompileError = base64.StdEncoding.EncodeToString([]byte(status.CompileError))
+	}
 
 	message, err := json.Marshal(status)
 	if err != nil {
