@@ -59,7 +59,14 @@ type RemoteJudgeProvider interface {
 
 func NewRemoteJudger() (RemoteJudger, error) {
 	poj, err := providers.NewProviderPOJ()
+	if err != nil {
+		return nil, err
+	}
 	hdu, err := providers.NewProviderHDU()
+	if err != nil {
+		return nil, err
+	}
+	sdut, err := providers.NewProviderSDUT()
 	if err != nil {
 		return nil, err
 	}
@@ -67,6 +74,7 @@ func NewRemoteJudger() (RemoteJudger, error) {
 		providers: map[string]RemoteJudgeProvider{
 			consts.RemotePOJ: poj,
 			consts.RemoteHDU: hdu,
+			consts.RemoteSDUT: sdut,
 		},
 	}, nil
 }
