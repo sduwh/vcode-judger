@@ -12,9 +12,10 @@ type RedisChannel struct {
 	stop   int32 // 0 => still running; 1 => Disconnect the redis
 }
 
-func NewRedisChannel(addr string) (Channel, error) {
+func NewRedisChannel(addr string, password string) (Channel, error) {
 	client := redis.NewClient(&redis.Options{
 		Addr: addr,
+		Password: password,
 	})
 	return &RedisChannel{client: client}, nil
 }

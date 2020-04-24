@@ -1,0 +1,9 @@
+debug: true
+
+log:
+  path: "/tmp"
+  name: "vcode-judge.log"
+
+redis:
+  host: 127.0.0.1
+  port: 6379

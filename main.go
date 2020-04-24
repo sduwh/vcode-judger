@@ -4,20 +4,19 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"flag"
-	"github.com/sduwh/vcode-judger/config"
+	"github.com/spf13/viper"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/sduwh/vcode-judger/channel"
+	"github.com/sduwh/vcode-judger/config"
 	"github.com/sduwh/vcode-judger/consts"
 	"github.com/sduwh/vcode-judger/models"
 	"github.com/sduwh/vcode-judger/remotejudger"
 	"github.com/sirupsen/logrus"
 )
-
-const RedisAddr = "127.0.0.1:6379"
 
 func main() {
 	// set time location
@@ -26,19 +25,25 @@ func main() {
 	// config init
 	configName := flag.String("configName", "config", "config file's name.")
 	configPath := flag.String("configPath", "./config", "config file's path.")
+	flag.Parse()
 	config.ConfInit(configName, configPath)
+
 	// log init
 	config.LogInit()
 	logrus.Printf("时区: %s\n", loc)
 
+	// redis config
+	redisAddr := viper.GetString("redis.host") + ":" + viper.GetString("redis.port")
+	redisPass := viper.GetString("redisPassword")
+
 	// main flow
 	// remote task queue
-	remoteTaskChannel, err := channel.NewRedisChannel(RedisAddr)
+	remoteTaskChannel, err := channel.NewRedisChannel(redisAddr, redisPass)
 	if err != nil {
 		logrus.WithError(err).Fatal("Create remote task channel")
 	}
 	// task result queue
-	statusChannel, err := channel.NewRedisChannel(RedisAddr)
+	statusChannel, err := channel.NewRedisChannel(redisAddr, redisPass)
 	if err != nil {
 		logrus.WithError(err).Fatal("Create status channel channel")
 	}
@@ -124,5 +129,5 @@ func (l *RemoteJudgeListener) OnError(err error) {
 }
 
 func (l *RemoteJudgeListener) OnComplete(judgeTaskId string) {
-	logrus.Infof("Task: %+vJudge done", judgeTaskId)
+	logrus.Infof("Task: %+v Judge done", judgeTaskId)
 }

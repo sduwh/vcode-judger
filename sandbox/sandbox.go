@@ -5,11 +5,12 @@ import (
 	"crypto/rand"
 	"flag"
 	"fmt"
-	"github.com/sirupsen/logrus"
 	"io"
 	"os/exec"
 	"sync"
 	"time"
+
+	"github.com/sirupsen/logrus"
 )
 
 const (

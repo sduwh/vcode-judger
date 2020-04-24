@@ -5,6 +5,7 @@ import (
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+
 	"log"
 	"os"
 	"path"
@@ -31,7 +32,11 @@ func LogInit() {
 		panic(err)
 	}
 	logrus.SetOutput(logFile)
-	logrus.SetLevel(logrus.DebugLevel)
+	if viper.GetBool("debug") {
+		logrus.SetLevel(logrus.DebugLevel)
+	}else {
+		logrus.SetLevel(logrus.InfoLevel)
+	}
 	writer, err := rotateLogs.New(
 		baseLogPath+".%Y%m%d%h%M",
 		rotateLogs.WithLinkName(baseLogPath),

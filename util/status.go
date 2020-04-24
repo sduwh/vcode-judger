@@ -1,8 +1,9 @@
 package util
 
 import (
-	"github.com/sduwh/vcode-judger/consts"
 	"regexp"
+
+	"github.com/sduwh/vcode-judger/consts"
 )
 
 const (

@@ -4,9 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/sduwh/vcode-judger/consts"
-	"github.com/sduwh/vcode-judger/models"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"math/rand"
 	"net/http"
@@ -14,6 +11,10 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/sduwh/vcode-judger/consts"
+	"github.com/sduwh/vcode-judger/models"
+	"github.com/sirupsen/logrus"
 )
 
 type ProviderSDUT struct {
