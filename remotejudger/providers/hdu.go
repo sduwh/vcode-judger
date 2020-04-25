@@ -209,7 +209,7 @@ func (h *ProviderHDU) Status(task *models.RemoteJudgeTask, submitID string) (*mo
 			}
 		}
 		_, _ = fmt.Sscanf(timeUsed.Text(), "%dMS", &status.TimeUsed)
-		_, _ = fmt.Sscanf(memoryUsed.Text(), "%dB", &status.TimeUsed)
+		_, _ = fmt.Sscanf(memoryUsed.Text(), "%dK", &status.TimeUsed)
 		logrus.Debugf("status: %+v", status)
 		return status, nil
 	}
