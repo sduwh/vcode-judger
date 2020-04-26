@@ -1,9 +1,9 @@
-FROM golang:1.14.2-alpine
+FROM alpine:3.9.6
 
-COPY . /app
+COPY ./target /app
+
+COPY ./config/config.yaml /app/config/config.yaml
 
 WORKDIR /app
 
-RUN go env -w GO111MODULE=on && go env -w GOPROXY="https://goproxy.cn,direct" && go mod download && go build -o ./target/vcode-judger
-
-ENTRYPOINT ["./target/vcode-judger"]
+ENTRYPOINT ["./vcode-judger"]

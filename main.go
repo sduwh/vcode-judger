@@ -18,6 +18,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// TODO 添加http server和上传TestCase相关函数
+// TODO 添加sandbox，和c,c++,java,Python运行环境
+// TODO 添加本地判题功能
 func main() {
 	// set time location
 	loc, _ := time.LoadLocation("Asia/Chongqing")
