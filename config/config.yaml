@@ -7,3 +7,5 @@ log:
 redis:
   host: "vcode-redis"
   port: 6379
+
+port: ":80"

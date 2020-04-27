@@ -4,10 +4,6 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"flag"
-	"github.com/spf13/viper"
-	"os"
-	"os/signal"
-	"syscall"
 	"time"
 
 	"github.com/sduwh/vcode-judger/channel"
@@ -15,7 +11,9 @@ import (
 	"github.com/sduwh/vcode-judger/consts"
 	"github.com/sduwh/vcode-judger/models"
 	"github.com/sduwh/vcode-judger/remotejudger"
+	"github.com/sduwh/vcode-judger/web"
 	"github.com/sirupsen/logrus"
+	"github.com/spf13/viper"
 )
 
 // TODO 添加http server和上传TestCase相关函数
@@ -63,11 +61,15 @@ func main() {
 		},
 	})
 
-	// exit the program
-	logrus.Info("Started")
-	sigCh := make(chan os.Signal, 1)
-	signal.Notify(sigCh, syscall.SIGINT, syscall.SIGTERM)
-	<-sigCh
+	port := viper.GetString("port")
+
+	router := web.GetRouter()
+	logrus.Info("Router load success...")
+	logrus.Info("Start web server...")
+	if err := router.Run(port); err != nil {
+		logrus.Panicf("Web server start fail: %s", err)
+	}
+
 	logrus.Info("Stopped")
 }
 
