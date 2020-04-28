@@ -13,15 +13,15 @@ import (
 
 func ReadyUploadTestCase(c *gin.Context) {
 	// 上传zip文件，预先解压至/tmp文件夹，为后续流程作准备
-	problemId := c.PostForm("problemId")
-	if problemId == "" {
-		message := "The params problemId is required"
+	caseId := c.PostForm("testCaseId")
+	if caseId == "" {
+		message := "The params caseId is required"
 		logrus.Info(message)
 		c.JSON(http.StatusBadRequest,
 			NewResponse(FAIL, message, nil))
 		return
 	}
-	logrus.Debugf("upload case for problem: %s", problemId)
+	logrus.Debugf("upload case for problem: %s", caseId)
 
 	_, header, err := c.Request.FormFile("file")
 	if err != nil {
@@ -49,7 +49,7 @@ func ReadyUploadTestCase(c *gin.Context) {
 	}
 
 	// unzip file to tmp
-	testCaseId, err := util.Unzip(header.Filename, tmpFilePath, tmpFilePath+"/"+problemId)
+	testCaseId, err := util.Unzip(header.Filename, tmpFilePath, tmpFilePath+"/"+caseId)
 	if err != nil {
 		message := fmt.Sprintf("unzip file fail: %s", err)
 		logrus.Info(message)
@@ -64,22 +64,24 @@ func ReadyUploadTestCase(c *gin.Context) {
 
 func CheckCase(c *gin.Context) {
 	// 从tmp文件夹中将测试用例移动至目标data文件夹
-	problemId := c.PostForm("problemId")
-	if problemId == "" {
-		message := "The params problemId is required"
+	caseId := c.PostForm("testCaseId")
+	if caseId == "" {
+		message := "The params caseId is required"
 		logrus.Info(message)
 		c.JSON(http.StatusBadRequest,
 			NewResponse(FAIL, message, nil))
 		return
 	}
-	logrus.Debugf("check case for problem: %s", problemId)
+	oldCaseId := c.PostForm("oldTestCaseId")
 
-	casePath := filepath.Join("/tmp", problemId)
+	logrus.Debugf("check case for problem: %s", caseId)
+
+	casePath := filepath.Join("/tmp", caseId)
 
 	for {
-		if err := os.Rename(casePath, filepath.Join("./cases", problemId)); err != nil {
+		if err := os.Rename(casePath, filepath.Join("./cases", caseId)); err != nil {
 			if strings.Contains(err.Error(), "file exists") {
-				_ = os.RemoveAll(filepath.Join("./cases", problemId))
+				_ = os.RemoveAll(filepath.Join("./cases", caseId))
 				continue
 			}
 			message := fmt.Sprintf("Move case dir fail: %s", err)
@@ -88,6 +90,14 @@ func CheckCase(c *gin.Context) {
 			return
 		}
 		break
+	}
+	if oldCaseId == "" {
+		for {
+			err := os.RemoveAll(filepath.Join("./cases", oldCaseId))
+			if err == nil {
+				break
+			}
+		}
 	}
 
 	c.JSON(http.StatusOK, NewResponse(SUCCESS, "success", nil))
