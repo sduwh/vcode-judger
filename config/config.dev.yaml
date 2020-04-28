@@ -9,3 +9,6 @@ redis:
   port: 6379
 
 port: ":8079"
+
+case:
+  path: "./cases"

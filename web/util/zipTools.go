@@ -7,8 +7,8 @@ import (
 	"path/filepath"
 )
 
-func Unzip(filename string, filePath string, targetDir string) (string, error) {
-	zipFile, err := zip.OpenReader(filePath + "/" + filename)
+func Unzip(unzipFileFullPath string, targetDir string) (string, error) {
+	zipFile, err := zip.OpenReader(unzipFileFullPath)
 	if err != nil {
 		return "", err
 	}
