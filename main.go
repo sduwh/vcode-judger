@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"flag"
+	"github.com/gin-gonic/gin"
 	"time"
 
 	"github.com/sduwh/vcode-judger/channel"
@@ -65,6 +66,11 @@ func main() {
 	router := web.GetRouter()
 	logrus.Info("Router load success...")
 	logrus.Info("Start web server...")
+	if viper.GetBool("debug") {
+		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	if err := router.Run(port); err != nil {
 		logrus.Panicf("Web server start fail: %s", err)
 	}
